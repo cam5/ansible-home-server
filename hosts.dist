@@ -1,0 +1,2 @@
+[home-server]
+{IP | HOSTNAME} ansible_ssh_user={USER_NAME}

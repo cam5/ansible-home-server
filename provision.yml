@@ -1,0 +1,60 @@
+---
+- hosts: home-server
+  sudo: yes
+
+  tasks:
+
+  - name: install packages
+    apt: name={{ item }} update_cache=yes state=latest
+    with_items:
+      - npm
+      - git
+      - mcrypt
+      - apache2
+      - php5-cli
+      - php5-curl
+      - php5-intl
+      - php5-json
+      - php5-mcrypt
+      - php5-mysql
+      - mysql-server
+      - mysql-client
+      - python-mysqldb
+      - libapache2-mod-php5
+      - makepasswd
+    notify:
+      - restart apache
+    sudo: yes
+
+  - name: enable php5 mcrypt module
+    shell: php5enmod mcrypt
+    args:
+      creates: /etc/php5/cli/conf.d/20-mcrypt.ini
+
+  - name: enabled mod_rewrite
+    apache2_module: name=rewrite state=present
+    notify:
+      - restart apache
+
+  - name: install composer
+    shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    args:
+      creates: /usr/local/bin/composer
+
+  - name: ssh dir user
+    shell: mkdir /home/cameron/.ssh && chmod 755 /home/cameron/.ssh
+    args:
+      creates: /home/cameron/.ssh
+
+  - name: bitbucket credentials
+    copy: src=/Users/Cam/.ssh/bb_rsa dest=/home/cameron/.ssh/
+
+  - name: bitbucket as a known host
+    shell: ssh-keyscan -H bitbucket.org >> /etc/ssh/ssh_known_hosts
+
+  handlers:
+    - name: restart apache
+      service: name=apache2 state=restarted
+      sudo: yes
+      sudo_user: www-data
+
