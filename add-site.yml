@@ -1,0 +1,56 @@
+---
+- hosts: web
+
+  tasks:
+
+  - name: create project folder
+    file: >
+      path=/var/www/{{ domain }}/public_html
+      state=directory
+      mode=0755
+      owner=www-data
+      group=www-data
+    sudo: yes
+
+  - name: create holding page
+    template: >
+      src=./templates/holding-page.html
+      dest=/var/www/{{ domain }}/public_html/index.html
+      owner=www-data
+      group=www-data
+      mode=644
+    sudo: yes
+
+  - name: add new virtualhost
+    template: >
+      src=./templates/vhost.conf
+      dest=/etc/apache2/sites-available/{{ domain }}.conf
+    sudo: yes
+
+  - name: enable site
+    shell: a2ensite {{ domain }}.conf
+    sudo: yes
+
+    notify:
+      - restart apache
+
+  handlers:
+    - name: restart apache
+      service: name=apache2 state=restarted
+      sudo: yes
+
+
+- hosts: dns
+
+  tasks:
+
+  - name: add file to hosts
+    shell: printf '{{ web_ip }} {{ domain }}\n{{ web_ip}} www.{{ domain }}\r\r' >> /etc/hosts
+    sudo: yes
+    notify:
+      - restart dnsmasq
+
+  handlers:
+  - name: restart dnsmasq
+    service: name=dnsmasq state=restarted
+    sudo: yes

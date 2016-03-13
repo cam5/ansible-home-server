@@ -1,2 +1,5 @@
-[home-server]
+[web]
 {IP | HOSTNAME} ansible_ssh_user={USER_NAME}
+
+[dns]
+{IP | HOSTNAME} ansible_ssh_user={USER_NAME} web_ip={x.x.x.x}
