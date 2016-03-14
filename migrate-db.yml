@@ -1,0 +1,14 @@
+---
+- hosts: web
+
+  tasks:
+
+  - name: copy dump file
+    copy: src={{ dumpfile_path }}{{ dumpfile }} dest=/tmp
+
+  - name: import file
+    shell: >
+      mysql --user={{ name }}_u \
+      --password=$(cat /var/www/{{ domain }}/.dbpw) \
+      {{ name }} < /tmp/{{ dumpfile }}
+

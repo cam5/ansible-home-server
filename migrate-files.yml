@@ -1,0 +1,11 @@
+---
+- hosts: web
+
+  tasks:
+
+  - name: copy files
+    copy: >
+      src={{ src }}
+      dest={{ dest }}
+    sudo: yes
+    sudo_user: www-data

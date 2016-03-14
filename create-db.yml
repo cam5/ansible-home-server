@@ -1,19 +1,23 @@
+---
+- hosts: web
+
+  tasks:
 
   - name: create db
-    mysql_db: name=mockup state=present
+    mysql_db: name={{ name }} state=present
 
   - name: generate db password
     shell: makepasswd --chars=32
     args:
-      creates: /var/www/symfony/.dbpw
+      creates: /var/www/{{ domain }}/.dbpw
     register: dbpwd
 
   - name: create db user
-    mysql_user: name=mockup_u password={{ dbpwd.stdout }} priv=mockup.*:ALL state=present
+    mysql_user: name={{ name }}_u password={{ dbpwd.stdout }} priv={{ name }}.*:ALL state=present
     when: dbpwd.changed
 
   - name: Save dbpw file
-    lineinfile: dest=/var/www/symfony/.dbpw line={{ dbpwd.stdout }} create=yes state=present
+    lineinfile: dest=/var/www/{{ domain }}/.dbpw line={{ dbpwd.stdout }} create=yes state=present
     sudo: yes
     sudo_user: www-data
     when: dbpwd.changed
